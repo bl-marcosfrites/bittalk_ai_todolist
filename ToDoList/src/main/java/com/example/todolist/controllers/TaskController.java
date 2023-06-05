@@ -1,34 +1,53 @@
 package com.example.todolist.controllers;
 
-import com.example.todolist.entities.TaskEntity;
-import com.example.todolist.services.ProgressService;
-import com.example.todolist.services.StatusService;
-import com.example.todolist.services.TaskService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.example.todolist.entities.Task;
+import com.example.todolist.exceptions.ResourceNotFoundException;
+import com.example.todolist.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
-    @Autowired
-    private ProgressService progressService;
-    @Autowired
-    private StatusService statusService;
-    @Autowired
-    private TaskService taskService;
+    private final TaskRepository taskRepository;
 
-    @GetMapping("/all")
-    public List<TaskEntity> getAllTasks(HttpServletRequest request) throws Exception {
-        return taskService.getAllTasksOrderByTitle();
+    @Autowired
+    public TaskController(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
-    @PostMapping("/create")
-    public void createTask(@ModelAttribute TaskEntity task) throws Exception {
-        String title = task.getTitle();
-        String description = task.getDescription();
-        taskService.createTask(title, description);
+    @GetMapping
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
+    }
+
+    @PostMapping
+    public Task createTask(@RequestBody Task task) {
+        return taskRepository.save(task);
+    }
+
+    @GetMapping("/{id}")
+    public Task getTaskById(@PathVariable Long id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+    }
+
+    @PutMapping("/{id}")
+    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+
+        task.setTitle(taskDetails.getTitle());
+        task.setDescription(taskDetails.getDescription());
+        task.setCompleted(taskDetails.isCompleted());
+
+        return taskRepository.save(task);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTask(@PathVariable Long id) {
+        taskRepository.deleteById(id);
     }
 }
