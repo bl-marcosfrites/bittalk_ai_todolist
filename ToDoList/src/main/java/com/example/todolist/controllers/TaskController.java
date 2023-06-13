@@ -27,24 +27,17 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public Task getTaskById(@PathVariable Long id) {
+    public Task getTaskById(@PathVariable int id) {
         return taskService.getTaskById(id);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
-
-        task.setTitle(taskDetails.getTitle());
-        task.setDescription(taskDetails.getDescription());
-        task.setCompleted(taskDetails.isCompleted());
-
-        return taskRepository.save(task);
+    public Task updateTask(@PathVariable int id, @RequestBody Task taskDetails) {
+        return taskService.updateTask(id, taskDetails);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(@PathVariable int id) {
+        taskService.deleteById(id);
     }
 }

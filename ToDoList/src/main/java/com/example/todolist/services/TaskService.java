@@ -27,13 +27,22 @@ public class TaskService {
 
     // create a function that receive an int id and return a Task
     @Transactional(readOnly = true)
-    public Task getTaskById(Long idTask) {
-        return taskRepository.findById(idTask).orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + idTask));
+    public Task getTaskById(int idTask) throws ResourceNotFoundException {
+        return taskRepository.findById((long) idTask).orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + idTask));
     }
 
     // crea una funcion que reciba una task y la actualice
     @Transactional
-    public Task updateTask(Task task) {
-        return taskRepository.save(task);
+    public Task updateTask(int idTask, Task receivedTask) throws ResourceNotFoundException {
+        Task taskToUpdate = taskRepository.findById((long) idTask).orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + idTask));
+        taskToUpdate.setTitle(receivedTask.getTitle());
+        taskToUpdate.setDescription(receivedTask.getDescription());
+        taskToUpdate.setCompleted(receivedTask.getCompleted());
+        return taskRepository.save(receivedTask);
+    }
+
+    @Transactional
+    public void deleteById(int id) {
+        taskRepository.deleteById((long) id);
     }
 }
